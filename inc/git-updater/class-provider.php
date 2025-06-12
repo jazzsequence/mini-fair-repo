@@ -145,7 +145,29 @@ class Provider implements ProviderInterface {
 		// Releases.
 		$needs_auth = $package->is_private;
 		$releases = [];
+		$images = [];
 		$versions = $package->release_asset ? $package->release_assets : $package->rollback;
+
+		// Banners and icons.
+		$other_assets = [
+			'banner' => $package->banners,
+			'icon' => $package->icons,
+		];
+		foreach( $other_assets as $key => $asset ) {
+			foreach ( $asset as $asset_id => $url ) {
+				if ( $key === 'icon' && $asset_id === 'default' && count( $asset ) > 1 ) {
+					continue;
+				}
+				$image = getimagesize( $url );
+				list( $width, $height ) = $image;
+				$images[ $key ][] = [
+					'url' => $url,
+					'content-type' => str_ends_with( $url, '.svg' ) ? 'image/svg+xml' : $image['mime'],
+					'height' => $height ?? null,
+					'width' => $width ?? null,
+				];
+			}
+		}
 
 		foreach ( $versions as $tag => $artifact_url ) {
 			$tag_ver = ltrim( $tag, 'v' );
@@ -161,6 +183,7 @@ class Provider implements ProviderInterface {
 					'package' => [],
 				],
 			];
+			$release['artifacts'] = $images;
 			if ( $needs_auth ) {
 				$release['auth'] = [];
 			}
@@ -172,9 +195,6 @@ class Provider implements ProviderInterface {
 				'signature' => $artifact_metadata['signature'] ?? null,
 				'checksum' => $artifact_metadata['sha256'] ?? null,
 			];
-			// Other artifacts.
-			// 'banners'           => $remote->banners,
-			// 'icons'             => $remote->icons,
 
 			$releases[] = $release;
 		}
