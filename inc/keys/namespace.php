@@ -9,21 +9,15 @@ use YOCLIB\Multiformats\Multibase\Multibase;
 
 const CURVE_K256 = 'secp256k1';
 const CURVE_P256 = 'p256';
+const CURVE_ED25519 = 'ed25519';
 
-/**
- * Generate a new keypair.
- *
- * We use NIST K-256 as the default to match ATProto.
- *
- * @see https://atproto.com/specs/cryptography
- *
- * @throws Exception If the curve is not supported.
- * @return KeyPair The generated keypair object.
- */
-function generate_keypair() : KeyPair {
-	$ec = new EC( CURVE_K256 );
-	return $ec->genKeyPair();
-}
+// From https://github.com/multiformats/multicodec/blob/master/table.csv:
+// 0xe7 0x01 = varint( 0xe7 ) = 231 = secp256k1-pub
+// 0x80 0x24 = varint( 0x80 ) = 128 = p256-pub
+// 0xed 0x01 = varint( 0xed ) = 237 = ed25519-pub
+const PREFIX_CURVE_K256 = "\xe7\x01";
+const PREFIX_CURVE_P256 = "\x80\x24";
+const PREFIX_CURVE_ED25519 = "\xed\x01";
 
 /**
  * Convert a multibase public key string to a keypair object.
