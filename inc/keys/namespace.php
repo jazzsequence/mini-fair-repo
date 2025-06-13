@@ -26,9 +26,9 @@ const PREFIX_CURVE_ED25519 = "\xed\x01";
  *
  * @throws Exception If the curve is not supported.
  * @param string $key The multibase public key string (starts with z).
- * @return KeyPair The keypair object.
+ * @return Key The key object.
  */
-function decode_public_key( string $key ) : KeyPair {
+function decode_public_key( string $key ) : Key {
 	static $cache = [];
 	if ( isset( $cache[ $key ] ) ) {
 		return $cache[ $key ];
@@ -36,16 +36,12 @@ function decode_public_key( string $key ) : KeyPair {
 
 	$decoded = Multibase::decode( $key );
 
-	$curve = match ( $decoded[0] ) {
-		"\x80" => CURVE_P256,
-		"\xE7" => CURVE_K256,
+	$keypair = match ( substr( $decoded, 0, 2 ) ) {
+		PREFIX_CURVE_P256    => ECKey::from_public( $key ),
+		PREFIX_CURVE_K256    => ECKey::from_public( $key ),
+		PREFIX_CURVE_ED25519 => EdDSAKey::from_public( $key ),
 		default => throw new Exception( 'Unsupported curve' ),
 	};
-
-	$ec = new EC( $curve );
-
-	$stripped = bin2hex( substr( $decoded, 2 ) );
-	$keypair = $ec->keyFromPublic( $stripped, 'hex' );
 	$cache[ $key ] = $keypair;
 	return $keypair;
 }
@@ -57,9 +53,9 @@ function decode_public_key( string $key ) : KeyPair {
  *
  * @throws Exception If the curve is not supported.
  * @param string $key The multibase public key string (starts with z).
- * @return KeyPair The keypair object.
+ * @return Key The key object.
  */
-function decode_private_key( string $key ) : KeyPair {
+function decode_private_key( string $key ) : Key {
 	static $cache = [];
 	if ( isset( $cache[ $key ] ) ) {
 		return $cache[ $key ];
@@ -67,16 +63,12 @@ function decode_private_key( string $key ) : KeyPair {
 
 	$decoded = Multibase::decode( $key );
 
-	$curve = match ( $decoded[0] ) {
-		"\x80" => CURVE_P256,
-		"\xE7" => CURVE_K256,
+	$keypair = match ( substr( $decoded, 0, 2 ) ) {
+		PREFIX_CURVE_P256    => ECKey::from_private( $key ),
+		PREFIX_CURVE_K256    => ECKey::from_private( $key ),
+		PREFIX_CURVE_ED25519 => EdDSAKey::from_private( $key ),
 		default => throw new Exception( 'Unsupported curve' ),
 	};
-
-	$ec = new EC( $curve );
-
-	$stripped = bin2hex( substr( $decoded, 2 ) );
-	$keypair = $ec->keyFromPrivate( $stripped, 'hex' );
 	$cache[ $key ] = $keypair;
 	return $keypair;
 }
@@ -86,9 +78,9 @@ function decode_private_key( string $key ) : KeyPair {
  *
  * @throws Exception If the did:key: string is invalid.
  * @param string $did The did:key: string.
- * @return KeyPair The keypair object.
+ * @return Key The key object.
  */
-function decode_did_key( string $did ) : KeyPair {
+function decode_did_key( string $did ) : Key {
 	if ( ! str_starts_with( $did, 'did:key:' ) ) {
 		throw new Exception( 'Invalid DID format' );
 	}
@@ -101,58 +93,13 @@ function decode_did_key( string $did ) : KeyPair {
 }
 
 /**
- * Convert a keypair object to a multibase public key string.
- *
- * @see https://atproto.com/specs/cryptography
- *
- * @throws Exception If the curve is not supported.
- * @param KeyPair $key The keypair object.
- * @param string $curve The curve to use (CURVE_K256 or CURVE_P256).
- * @return string The multibase public key string (starts with z).
- */
-function encode_public_key( KeyPair $key, string $curve ) : string {
-	$pub = $key->getPublic( true, 'hex' );
-	$prefix = match ( $curve ) {
-		CURVE_K256 => 'e701',
-		CURVE_P256 => '8024',
-		default => throw new Exception( 'Unsupported curve' ),
-	};
-
-	$encoded = Multibase::encode( Multibase::BASE58BTC, hex2bin( $prefix . $pub ) );
-	return $encoded;
-}
-
-/**
- * Convert a keypair object to a multibase private key string.
- *
- * @see https://atproto.com/specs/cryptography
- *
- * @throws Exception If the curve is not supported.
- * @param KeyPair $key The keypair object.
- * @param string $curve The curve to use (CURVE_K256 or CURVE_P256).
- * @return string The multibase private key string (starts with z).
- */
-function encode_private_key( KeyPair $key, string $curve ) : string {
-	$priv = $key->getPrivate( 'hex' );
-	$prefix = match ( $curve ) {
-		CURVE_K256 => 'E701',
-		CURVE_P256 => '8024',
-		default => throw new Exception( 'Unsupported curve' ),
-	};
-
-	$encoded = Multibase::encode( Multibase::BASE58BTC, hex2bin( $prefix . $priv ));
-	return $encoded;
-}
-
-/**
  * Convert a keypair object to a did:key: string.
  *
  * @throws Exception If the curve is not supported.
- * @param KeyPair $key The keypair object.
+ * @param Key $key The keypair object.
  * @param string $curve The curve to use (CURVE_K256 or CURVE_P256).
  * @return string The did:key: string.
  */
-function encode_did_key( KeyPair $key, string $curve ) : string {
-	$encoded = encode_public_key( $key, $curve );
-	return 'did:key:' . $encoded;
+function encode_did_key( Key $key ) : string {
+	return 'did:key:' . $key->encode_public();
 }
