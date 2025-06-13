@@ -105,6 +105,7 @@ class ECKey implements Key {
 		] );
 
 		// Convert to compact (IEEE-P1363) form.
+		// todo: do we need to do this for p256 too?
 		if ( $this->curve === CURVE_K256 ) {
 			return $this->signature_to_compact( $this->keypair->ec, $signature );
 		}

@@ -4,7 +4,6 @@ namespace MiniFAIR\Keys;
 
 use Elliptic\EdDSA;
 use Elliptic\EdDSA\KeyPair;
-use Elliptic\EdDSA\Signature;
 use Exception;
 use YOCLIB\Multiformats\Multibase\Multibase;
 
