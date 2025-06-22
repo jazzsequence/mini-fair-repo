@@ -143,7 +143,7 @@ class DID {
 			throw new \Exception( 'Error performing operation: ' . wp_remote_retrieve_body( $response ) );
 		}
 
-		var_dump( $response );
+		return true;
 	}
 
 	public function update() {
@@ -345,7 +345,7 @@ class DID {
 		];
 
 		// Generate an initial keypair for verification.
-		$verification_key = $did->generate_verification_key();
+		$did->generate_verification_key();
 
 		// Create the genesis operation.
 		$genesis_unsigned = new Operation(
