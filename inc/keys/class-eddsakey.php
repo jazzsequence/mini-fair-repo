@@ -7,7 +7,7 @@ use Elliptic\EdDSA\KeyPair;
 use Exception;
 use YOCLIB\Multiformats\Multibase\Multibase;
 
-class EdDSAKey {
+class EdDSAKey implements Key {
 	public function __construct(
 		protected KeyPair $keypair,
 		protected string $curve
