@@ -62,21 +62,21 @@ class Operation implements JsonSerializable {
 		if ( empty( $this->rotationKeys ) ) {
 			throw new Exception( 'Rotation keys are empty' );
 		}
-		foreach ( $this->rotationKeys as $keypair ) {
-			if ( ! $keypair instanceof KeyPair ) {
-				throw new Exception( 'Rotation key is not a KeyPair object' );
+		foreach ( $this->rotationKeys as $key ) {
+			if ( ! $key instanceof Key ) {
+				throw new Exception( 'Rotation key is not a Key object' );
 			}
 		}
 
 		if ( empty( $this->verificationMethods ) ) {
 			throw new Exception( 'Verification methods are empty' );
 		}
-		foreach ( $this->verificationMethods as $key => $keypair ) {
-			if ( $key !== VERIFICATION_METHOD_ID ) {
-				throw new Exception( sprintf( 'Invalid verification method ID: %s', $key ) );
+		foreach ( $this->verificationMethods as $id => $key ) {
+			if ( $id !== VERIFICATION_METHOD_ID ) {
+				throw new Exception( sprintf( 'Invalid verification method ID: %s', $id ) );
 			}
-			if ( ! $keypair instanceof KeyPair ) {
-				throw new Exception( 'Rotation key is not a KeyPair object' );
+			if ( ! $key instanceof Key ) {
+				throw new Exception( 'Rotation key is not a Key object' );
 			}
 		}
 
