@@ -338,8 +338,13 @@ function render_edit_page( WP_Post $post ) {
 					<?php
 					$verification_keys = $did->get_verification_keys();
 					foreach ( $verification_keys as $key ) : ?>
+						<?php
+						$public = $key->encode_public();
+						$id = substr( hash( 'sha256', $public ), 0, 6 );
+						?>
 						<li>
-							<code><?php echo esc_html( $key->encode_public() ); ?></code>
+							<code>fair_<?= esc_html( $id ); ?></code>:
+							<code><?= esc_html( $public ); ?></code>
 							<form action="" method="post">
 								<?php wp_nonce_field( NONCE_PREFIX . ACTION_KEY_REVOKE ); ?>
 								<input type="hidden" name="post" value="<?= esc_attr( $post->ID ); ?>" />
