@@ -165,12 +165,16 @@ class DID {
 		$last_cid = cid_for_operation( $last_op );
 
 		// Merge prior data with current data.
+		$verification_keys = [];
+		foreach ( $this->get_verification_keys() as $key ) {
+			$key_id = substr( hash( 'sha256', $key->encode_public() ), 0, 6 );
+			$verification_keys[ 'fair_' . $key_id ] = $key;
+		}
+
 		$update_unsigned = new Operation(
 			type: 'plc_operation',
 			rotationKeys: $this->get_rotation_keys(),
-			verificationMethods: [
-				VERIFICATION_METHOD_ID => $this->get_verification_keys()[0],
-			],
+			verificationMethods: $verification_keys,
 			alsoKnownAs: $last_op->alsoKnownAs,
 			services: [
 				'fairpm_repo' => [
