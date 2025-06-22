@@ -72,7 +72,7 @@ class Operation implements JsonSerializable {
 			throw new Exception( 'Verification methods are empty' );
 		}
 		foreach ( $this->verificationMethods as $id => $key ) {
-			if ( $id !== VERIFICATION_METHOD_ID ) {
+			if ( ! str_starts_with( $id, VERIFICATION_METHOD_PREFIX ) ) {
 				throw new Exception( sprintf( 'Invalid verification method ID: %s', $id ) );
 			}
 			if ( ! $key instanceof Key ) {
@@ -85,7 +85,7 @@ class Operation implements JsonSerializable {
 			if ( empty( $this->rotationKeys ) || empty( $this->verificationMethods ) ) {
 				throw new Exception( 'Missing rotationKeys or verificationMethods' );
 			}
-			if ( empty( $this->verificationMethods[ VERIFICATION_METHOD_ID ] ) ) {
+			if ( empty( $this->verificationMethods ) ) {
 				throw new Exception( 'Missing verification method for FAIR' );
 			}
 		}

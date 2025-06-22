@@ -157,6 +157,20 @@ class DID {
 		return $this->perform_operation( $op );
 	}
 
+	/**
+	 * Prepare the verification keys for the operation.
+	 *
+	 * Generates a unique ID for each key, using its hash.
+	 */
+	protected function get_verification_keys_for_op() : array {
+		$verification_keys = [];
+		foreach ( $this->get_verification_keys() as $key ) {
+			$key_id = substr( hash( 'sha256', $key->encode_public() ), 0, 6 );
+			$verification_keys[ 'fair_' . $key_id ] = $key;
+		}
+		return $verification_keys;
+	}
+
 	protected function prepare_update_op() : ?SignedOperation {
 		// Fetch the previous op.
 		$last_op = $this->fetch_last_op();
@@ -165,16 +179,10 @@ class DID {
 		$last_cid = cid_for_operation( $last_op );
 
 		// Merge prior data with current data.
-		$verification_keys = [];
-		foreach ( $this->get_verification_keys() as $key ) {
-			$key_id = substr( hash( 'sha256', $key->encode_public() ), 0, 6 );
-			$verification_keys[ 'fair_' . $key_id ] = $key;
-		}
-
 		$update_unsigned = new Operation(
 			type: 'plc_operation',
 			rotationKeys: $this->get_rotation_keys(),
-			verificationMethods: $verification_keys,
+			verificationMethods: $this->get_verification_keys_for_op(),
 			alsoKnownAs: $last_op->alsoKnownAs,
 			services: [
 				'fairpm_repo' => [
@@ -345,9 +353,7 @@ class DID {
 			rotationKeys: [
 				$rotation_key,
 			],
-			verificationMethods: [
-				VERIFICATION_METHOD_ID => $verification_key,
-			],
+			verificationMethods: $did->get_verification_keys_for_op(),
 			alsoKnownAs: [],
 			services: [],
 		);

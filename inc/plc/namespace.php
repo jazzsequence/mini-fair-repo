@@ -14,7 +14,7 @@ use MiniFAIR\Keys\Key;
 use WP_CLI;
 use YOCLIB\Multiformats\Multibase\Multibase;
 
-const VERIFICATION_METHOD_ID = 'fairpm';
+const VERIFICATION_METHOD_PREFIX = 'fair_';
 
 function bootstrap() {
 	add_action( 'init', __NAMESPACE__ . '\\register_types' );
