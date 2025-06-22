@@ -54,6 +54,39 @@ class DID {
 	}
 
 	/**
+	 * Invalidate a verification key.
+	 *
+	 * Note that update() must be called to persist the change.
+	 *
+	 * @param Key $key The key to invalidate.
+	 * @return bool True if the key was invalidated, false if it was not found.
+	 */
+	public function invalidate_verification_key( Key $key ) {
+		$encoded = $key->encode_private();
+		if ( ! in_array( $encoded, $this->verification_keys, true ) ) {
+			return false;
+		}
+
+		$this->verification_keys = array_filter( $this->verification_keys, fn ( $k ) => $k !== $encoded );
+		return true;
+	}
+
+	/**
+	 * Generate a new verification key.
+	 *
+	 * Creates a new EdDSA (Ed25519) keypair, and adds it to key list.
+	 *
+	 * Note that update() must be called to persist the change.
+	 *
+	 * @return Key The generated key.
+	 */
+	public function generate_verification_key() : Key {
+		$key = Keys\EdDSAKey::generate( Keys\CURVE_ED25519 );
+		$this->verification_keys[] = $key->encode_private();
+		return $key;
+	}
+
+	/**
 	 * Get the internal post ID for this DID.
 	 *
 	 * Only use this if you absolutely need it.
@@ -300,10 +333,7 @@ class DID {
 		];
 
 		// Generate an initial keypair for verification.
-		$verification_key = Keys\EdDSAKey::generate( Keys\CURVE_ED25519 );
-		$did->verification_keys = [
-			$verification_key->encode_private(),
-		];
+		$verification_key = $did->generate_verification_key();
 
 		// Create the genesis operation.
 		$genesis_unsigned = new Operation(

@@ -46,7 +46,7 @@ class EdDSAKey implements Key {
 	 * @return string The multibase private key string (starts with z).
 	 */
 	public function encode_public() : string {
-		$pub = $this->keypair->getPublic( true, 'hex' );
+		$pub = $this->keypair->getPublic( 'hex' );
 		$prefix = match ( $this->curve ) {
 			CURVE_ED25519 => bin2hex( PREFIX_CURVE_ED25519 ),
 			default => throw new Exception( 'Unsupported curve' ),
@@ -68,7 +68,7 @@ class EdDSAKey implements Key {
 			throw new Exception( 'Cannot encode private key for a public key' );
 		}
 
-		$priv = $this->keypair->getSecret( true, 'hex' );
+		$priv = $this->keypair->getSecret( 'hex' );
 		$prefix = match ( $this->curve ) {
 			CURVE_ED25519 => bin2hex( PREFIX_CURVE_ED25519 ),
 			default => throw new Exception( 'Unsupported curve' ),
@@ -89,7 +89,8 @@ class EdDSAKey implements Key {
 
 		// Convert to KeyPair object.
 		$ed = new EdDSA( $curve );
-		return new static( $ed->keyFromSecret( $secret ), $curve );
+		$key = $ed->keyFromSecret( bin2hex( $secret ) );
+		return new static( $key, $curve );
 	}
 
 	/**
