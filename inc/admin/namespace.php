@@ -400,6 +400,22 @@ function render_edit_page( WP_Post $post ) {
 			</th>
 			<td>
 				<p><?php esc_html_e( 'If the service endpoint or keys have changed, you can resync to the PLC Directory.', 'minifair' ); ?></p>
+				<details>
+					<summary><?php esc_html_e( 'Expected changes', 'minifair' ); ?></summary>
+					<?php
+					$current = $remote;
+					unset( $current['@context'] );
+					$diff = wp_text_diff(
+						json_encode( $current, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ),
+						json_encode( $did->get_expected_document(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES )
+					);
+					if ( empty( $diff ) ) {
+						echo '<p class="description">' . esc_html__( 'No changes detected. The PLC Directory is already up to date.', 'minifair' ) . '</p>';
+					} else {
+						echo '<div class="diff">' . $diff . '</div>';
+					}
+					?>
+				</details>
 				<form action="" method="post">
 					<?php wp_nonce_field( NONCE_PREFIX . ACTION_SYNC ); ?>
 					<input type="hidden" name="post" value="<?php echo esc_attr( $post->ID ); ?>" />

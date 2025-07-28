@@ -157,6 +157,16 @@ class DID {
 		return $this->perform_operation( $op );
 	}
 
+	public function get_expected_document() : array {
+		$op = $this->prepare_update_op();
+		if ( ! $op ) {
+			$op = $this->fetch_last_op();
+		}
+
+		// Convert the operation to a document.
+		return operation_to_did_document( $this->id, $op );
+	}
+
 	/**
 	 * Prepare the verification keys for the operation.
 	 *

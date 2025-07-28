@@ -186,3 +186,46 @@ function cid_for_operation( SignedOperation $op ) : string {
 	$cid = Multibase::encode( Multibase::BASE32, $cid );
 	return $cid;
 }
+
+/**
+ * Convert an operation to an expected DID Document.
+ *
+ * Used to predict the output DID document after an operation is performed.
+ * This should only be used for informational purposes, such as displaying an
+ * indicative diff to a user.
+ *
+ * @param string $id DID ID.
+ * @param Operation $op The operation to convert.
+ * @return array The DID Document representation of the operation.
+ */
+function operation_to_did_document( string $id, Operation $op ) : array {
+	$doc = [
+		'id' => $id,
+		'alsoKnownAs' => $op->alsoKnownAs,
+		'verificationMethod' => [],
+		'service' => [],
+	];
+
+	foreach ( $op->verificationMethods as $key => $value ) {
+		if ( ! empty( $value ) ) {
+			$doc['verificationMethod'][] = [
+				'id' => sprintf( '%s#%s', $id, $key ),
+				'type' => 'Multikey',
+				'controller' => $id,
+				'publicKeyMultibase' => $value->encode_public(),
+			];
+		}
+	}
+
+	foreach ( $op->services as $key => $service ) {
+		if ( ! empty( $service['endpoint'] ) && ! empty( $service['type'] ) ) {
+			$doc['service'][] = [
+				'id' => sprintf( '#%s', $key ),
+				'type' => $service['type'],
+				'serviceEndpoint' => $service['endpoint'],
+			];
+		}
+	}
+
+	return $doc;
+}
