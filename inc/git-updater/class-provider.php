@@ -99,7 +99,7 @@ class Provider implements ProviderInterface {
 
 		// Parse security data.
 		$security = $package->security ?? '';
-		$security_key = $security_key = filter_var( $security, FILTER_VALIDATE_EMAIL ) ? 'email' : 'uri';
+		$security_key = filter_var( $security, FILTER_VALIDATE_EMAIL ) ? 'email' : 'uri';
 		$data->security[][ $security_key ] = $package->security ?? '';
 
 		$data->keywords = $package->readme_tags ?? [];
