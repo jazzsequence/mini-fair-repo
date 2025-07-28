@@ -2,6 +2,7 @@
 
 namespace MiniFAIR\Admin;
 
+use Exception;
 use MiniFAIR;
 use MiniFAIR\PLC\DID;
 use WP_Post;
@@ -288,7 +289,7 @@ function on_revoke_key( DID $did ) {
 		$did->save();
 		wp_redirect( get_edit_post_link( $did->get_internal_post_id(), 'raw' ) );
 		exit;
-	} catch ( \Exception $e ) {
+	} catch ( Exception $e ) {
 		var_dump( $e );
 		wp_die( $e->getMessage(), __( 'Error Syncing PLC DID', 'minifair' ), [ 'response' => 500 ] );
 	}
