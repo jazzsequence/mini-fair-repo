@@ -98,9 +98,11 @@ class Provider implements ProviderInterface {
 		$data->license = 'GPL-2.0-or-later';
 
 		// Parse security data.
-		$security = $package->security ?? '';
-		$security_key = filter_var( $security, FILTER_VALIDATE_EMAIL ) ? 'email' : 'uri';
-		$data->security[][ $security_key ] = $package->security ?? '';
+		$data->security = [];
+		if ( ! empty( $package->security ) ) {
+			$security_key = filter_var( $package->security, FILTER_VALIDATE_EMAIL ) ? 'email' : 'uri';
+			$data->security[][ $security_key ] = $package->security ?? '';
+		}
 
 		$data->keywords = $package->readme_tags ?? [];
 		$data->sections = $package->sections;
